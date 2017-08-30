@@ -20,7 +20,7 @@ subnetName="default"
 subnetAddressPrefix="10.0.0.0/24"
 networkSecurityGroup="master-workshop-westus2"
 storageAccountName="openshiftwkshpwestus2"
-adminUserName="<<yourusername>>"
+adminUserName="<<yourusername_fortheVMadmin>>"
 ```
 
 #### Create Network Security Group
@@ -126,12 +126,14 @@ This is a one time task. If you already have one, skip this step.
 
 ```
 azure storage account create $storageAccountName --resource-group $resourceGroupName --sku-name PLRS --kind Storage --location $location
+#alternatively:
+azure storage account create --resource-group $resourceGroupName --sku Premium_LRS --kind Storage --location $location --name $storageAccountNamegroup
 ```
 
 Verify by running
 
 ```
-azure storage account show $storageAccountName --resource-group $resourceGroupName
+azure storage account show --name $storageAccountName --resource-group $resourceGroupName
 ```
 
 #### Create Network and Subnet
@@ -161,7 +163,7 @@ Run the following commands to get the subnetId assigned to the environment varia
 ```
 subnetId="$(azure network vnet subnet show --resource-group $resourceGroupName \
                 --vnet-name $vnetName \
-                --name $subnetName|grep Id)"
+                --name $subnetName|grep id)"
 subnetId=${subnetId#*/}  
 ```
 
@@ -194,12 +196,15 @@ azure network public-ip create --resource-group $resourceGroupName \
     --location $location \
     --allocation-method Static 
 
+
 azure network nic create --name $nicName \
     --resource-group $resourceGroupName \
     --location $location \
     --subnet-id $subnetId \
     --network-security-group-name $networkSecurityGroup \
     --public-ip-name $publicIPName              
+#alternatively
+#azure network nic create --name $nicName     --resource-group $resourceGroupName  --location $location --subnet $subnetName --vnet-name $vnetName --network-security-group $networkSecurityGroup  --public-ip-address $publicIPName
 
 
 azure vm create --resource-group $resourceGroupName \
@@ -213,7 +218,8 @@ azure vm create --resource-group $resourceGroupName \
     --storage-account-name $storageAccountName \
     --admin-username $adminUserName \
     --ssh-publickey-file ~/.ssh/id_rsa.pub
-
+#alternatively
+azure vm create --resource-group $resourceGroupName     --name $vmName     --location $location     --size $vmSize       --nics $nicName         --image RHEL     --storage-account $storageAccountName --use-unmanaged-disk     --admin-username $adminUserName     --ssh-key-value ~/.ssh/id_rsa.pub
 ```
 
 Find your jump server's public ip by running
